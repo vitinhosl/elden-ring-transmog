@@ -24,8 +24,9 @@ using namespace ertransmogrify;
 
 bool vfx::is_in_chr_make_menu = false;
 
-unsigned short head_transmog_state_info = 998;
-unsigned short body_transmog_state_info = 999;
+static constexpr uint16_t client_side_only_state_info = 567;
+static constexpr uint16_t head_transmog_state_info = 998;
+static constexpr uint16_t body_transmog_state_info = 999;
 
 struct reinforce_param_protector_result_st {
     long long id;
@@ -465,6 +466,17 @@ class update_transmog_vfx_task : public er::CS::CSEzTask {
      */
     bool is_client_side_only() {
         using clock = chrono::steady_clock;
+
+        // This stateinfo forces client side only regardless of other options (for ERR)
+        if (auto world_chr_man = er::CS::WorldChrMan::instance();
+            auto main_player = world_chr_man->main_player) {
+            for (auto speffect_entry = main_player->special_effects->head; speffect_entry;
+                 speffect_entry = speffect_entry->next) {
+                if (speffect_entry->param->stateInfo == client_side_only_state_info) {
+                    return true;
+                }
+            }
+        }
 
         auto result = ertransmogrify::config::client_side_only;
 
