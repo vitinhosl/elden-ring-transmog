@@ -35,6 +35,10 @@ auto transmog_legs_menu_state = open_regular_shop_state{
     shop::transmog_legs_shop_menu_id,
     shop::transmog_legs_shop_menu_id + shop::transmog_shop_max_size - 1, &transmog_menu_state};
 
+auto transmog_set_menu_state = open_regular_shop_state{
+    shop::transmog_set_shop_menu_id,
+    shop::transmog_set_shop_menu_id + shop::transmog_shop_max_size - 1, &transmog_menu_state};
+
 auto undo_transmog_state =
     give_speffect_to_player_state{vfx::undo_transmog_speffect_id, &transmog_menu_state};
 
@@ -43,7 +47,8 @@ talkscript_menu_state transmog_menu_state = {{
     {2, ertransmogrify::msg::event_text_for_talk_transmog_chest, &transmog_chest_menu_state},
     {3, ertransmogrify::msg::event_text_for_talk_transmog_arms, &transmog_arms_menu_state},
     {4, ertransmogrify::msg::event_text_for_talk_transmog_legs, &transmog_legs_menu_state},
-    {5, ertransmogrify::msg::event_text_for_talk_undo_transmog, &undo_transmog_state},
+    {5, ertransmogrify::msg::event_text_for_talk_transmog_set, &transmog_set_menu_state},
+    {6, ertransmogrify::msg::event_text_for_talk_undo_transmog, &undo_transmog_state},
     {99, ertransmogrify::msg::event_text_for_talk_cancel, nullptr, true},
 }};
 

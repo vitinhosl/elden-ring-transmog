@@ -64,6 +64,8 @@ const wchar_t *get_message_detour(CS::MsgRepository *msg_repository,
                     return transmog_messages.transmog_arms.c_str();
                 case msg::event_text_for_talk_transmog_legs:
                     return transmog_messages.transmog_legs.c_str();
+                case msg::event_text_for_talk_transmog_set:
+                    return transmog_messages.transmog_set.c_str();
                 case msg::event_text_for_talk_undo_transmog:
                     return transmog_messages.undo_transmog.c_str();
             }
@@ -79,6 +81,8 @@ const wchar_t *get_message_detour(CS::MsgRepository *msg_repository,
                     return transmog_messages.transmog_arms_title.c_str();
                 case msg::menu_text_transmog_legs:
                     return transmog_messages.transmog_legs_title.c_str();
+                case msg::menu_text_transmog_set:
+                    return transmog_messages.transmog_set_title.c_str();
             }
             break;
 
@@ -144,6 +148,8 @@ const wchar_t *get_message_detour(CS::MsgRepository *msg_repository,
                         return transmog_messages.transmog_arms_to.c_str();
                     case shop::protector_category_legs:
                         return transmog_messages.transmog_legs_to.c_str();
+                    case shop::transmog_shop_ui_category_set:
+                        return transmog_messages.transmog_set_to.c_str();
                 }
             }
             break;

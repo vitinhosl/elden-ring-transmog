@@ -66,6 +66,10 @@ add_library(
   src/ertransmogrify_vfx.cpp
   src/utils/players.cpp)
 
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
+endif()
+
 add_definitions(-DPROJECT_VERSION="${CMAKE_PROJECT_VERSION}")
 
 add_custom_command(

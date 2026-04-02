@@ -482,23 +482,19 @@ class update_transmog_vfx_task : public er::CS::CSEzTask {
 
         static auto invert = false;
         static auto last_invert_change_time = clock::now();
-        auto new_invert = false;
-
-        // F8 temporarily inverts this setting so you can peek at other players' actual armor
-        if (GetAsyncKeyState(VK_F8) & 0x8000) {
-            new_invert = true;
-        }
+        static auto prev_key_down = false;
 
         auto now = clock::now();
+        auto key_down = (GetAsyncKeyState(VK_F8) & 0x8000) != 0;
+        auto toggle_requested = key_down && !prev_key_down;
+        prev_key_down = key_down;
 
-        // In combat, throttle the client side only toggle to avoid intentional visual
-        // distractions in PVP
-        if (invert != new_invert) {
+        if (toggle_requested) {
             auto cs_sound = er::CS::CSSound::instance();
             auto is_in_combat = cs_sound && cs_sound->flags && cs_sound->flags->is_in_combat;
 
             if (!is_in_combat || (now - last_invert_change_time > chrono::seconds(1))) {
-                invert = new_invert;
+                invert = !invert;
                 last_invert_change_time = now;
             }
         }

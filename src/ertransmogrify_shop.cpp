@@ -84,9 +84,12 @@ static er::paramdef::shop_lineup_param transmog_head_shop_menu = {0};
 static er::paramdef::shop_lineup_param transmog_chest_shop_menu = {0};
 static er::paramdef::shop_lineup_param transmog_arms_shop_menu = {0};
 static er::paramdef::shop_lineup_param transmog_legs_shop_menu = {0};
+static er::paramdef::shop_lineup_param transmog_set_shop_menu = {0};
 
 static unordered_map<int, er::paramdef::shop_lineup_param> transmog_shop_lineups;
 static unordered_map<int, er::paramdef::equip_param_goods_st> transmog_goods;
+
+static bool is_set_shop_open = false;
 
 static FindShopMenuResult *(*get_shop_menu)(FindShopMenuResult *result,
                                             unsigned char shop_type,
@@ -117,6 +120,11 @@ FindShopMenuResult *get_shop_menu_detour(FindShopMenuResult *result,
             result->shop_type = (unsigned char)0;
             result->id = shop::transmog_legs_shop_menu_id;
             result->row = &transmog_legs_shop_menu;
+            break;
+        case shop::transmog_set_shop_menu_id:
+            result->shop_type = (unsigned char)0;
+            result->id = shop::transmog_set_shop_menu_id;
+            result->row = &transmog_set_shop_menu;
             break;
         default:
             get_shop_menu(result, shop_type, begin_id, end_id);
@@ -174,7 +182,7 @@ static void get_shop_lineup_param_detour(FindShopLineupParamResult *result,
                                          unsigned char shop_type,
                                          int id) {
     if (shop_type == unsigned char(0) && id >= shop::transmog_head_shop_menu_id &&
-        id < shop::transmog_legs_shop_menu_id + shop::transmog_shop_max_size) {
+        id < shop::transmog_set_shop_menu_id + shop::transmog_shop_max_size) {
         auto entry = transmog_shop_lineups.find(id);
         if (entry != transmog_shop_lineups.end()) {
             auto &row = entry->second;
@@ -215,6 +223,7 @@ static void open_regular_shop_detour(void *unk,
                                      unsigned long long begin_id,
                                      unsigned long long end_id) {
     bool is_transmog_shop = false;
+    is_set_shop_open = false;
 
     switch (begin_id) {
         case shop::transmog_head_shop_menu_id:
@@ -231,6 +240,11 @@ static void open_regular_shop_detour(void *unk,
             break;
         case shop::transmog_legs_shop_menu_id:
             msg::set_active_transmog_shop_protector_category(shop::protector_category_legs);
+            is_transmog_shop = true;
+            break;
+        case shop::transmog_set_shop_menu_id:
+            msg::set_active_transmog_shop_protector_category(shop::transmog_shop_ui_category_set);
+            is_set_shop_open = true;
             is_transmog_shop = true;
             break;
         default:
@@ -305,6 +319,53 @@ static bool add_inventory_from_shop_detour(int *item_id_address, int quantity) {
         }
     }
 
+    if (is_set_shop_open && transmog_protector.protectorCategory == shop::protector_category_head &&
+        !shop::dlc_transformation_goods_by_protector_id.contains(transmog_protector_id)) {
+        auto remove_transmog_category = [&](unsigned char protector_category) {
+            for (auto [protector_id, protector] : er::param::EquipParamProtector) {
+                if (protector.protectorCategory != protector_category) {
+                    continue;
+                }
+
+                auto goods_id = shop::get_transmog_goods_id_for_protector(protector_id);
+                if (goods_id == -1) {
+                    continue;
+                }
+
+                if (players::has_item_in_inventory(main_player,
+                                                   shop::item_type_goods_begin + goods_id)) {
+                    add_remove_item(shop::item_type_goods_begin, goods_id, -1);
+                }
+            }
+        };
+
+        auto apply_transmog_piece = [&](long long protector_id, unsigned char protector_category) {
+            auto [protector, exists] = er::param::EquipParamProtector[protector_id];
+            if (!exists || protector.protectorCategory != protector_category) {
+                return;
+            }
+
+            auto goods_id = shop::get_transmog_goods_id_for_protector(protector_id);
+            if (goods_id == -1) {
+                return;
+            }
+            if (!is_protector_unlocked(static_cast<int>(goods_id))) {
+                return;
+            }
+
+            remove_transmog_category(protector_category);
+            add_remove_item(shop::item_type_goods_begin, goods_id, +1);
+        };
+
+        apply_transmog_piece(transmog_protector_id + vfx::chest_protector_offset,
+                             shop::protector_category_chest);
+        apply_transmog_piece(transmog_protector_id + vfx::arms_protector_offset,
+                             shop::protector_category_arms);
+        apply_transmog_piece(transmog_protector_id + vfx::legs_protector_offset,
+                             shop::protector_category_legs);
+        apply_transmog_piece(transmog_protector_id, shop::protector_category_head);
+    }
+
     // If any DLC transformation protector is chosen, automatically apply the other protectors in
     // the set. DLC transformations are made up of sets of 3 linked protectors that must be used
     // together.
@@ -377,6 +438,9 @@ void shop::initialize() {
 
     transmog_legs_shop_menu.menuTitleMsgId = msg::menu_text_transmog_legs;
     transmog_legs_shop_menu.menuIconId = 5;
+
+    transmog_set_shop_menu.menuTitleMsgId = msg::menu_text_transmog_set;
+    transmog_set_shop_menu.menuIconId = 5;
 
     // Hook get_shop_menu() to return the above shop menus. The player can select an appearance
     // by buying an item from one of these shops for $0, since this is easier than making a
@@ -473,6 +537,14 @@ void shop::initialize() {
             .equipId = static_cast<int>(goods_id),
             .equipType = 3,
         };
+
+        if (protector_row.protectorCategory == protector_category_head &&
+            !dlc_transformation_protector) {
+            transmog_shop_lineups[shop::transmog_set_shop_menu_id + protector_id / 100] = {
+                .equipId = static_cast<int>(goods_id),
+                .equipType = 3,
+            };
+        }
     }
 
     // Hook get_equip_param_goods() to return the above items

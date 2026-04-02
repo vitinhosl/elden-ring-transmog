@@ -22,6 +22,9 @@ struct Messages {
     std::wstring transmog_chest_to;
     std::wstring transmog_arms_to;
     std::wstring transmog_legs_to;
+    std::wstring transmog_set;
+    std::wstring transmog_set_title;
+    std::wstring transmog_set_to;
 };
 
 extern const std::map<std::string, Messages> messages_by_lang;
@@ -31,6 +34,7 @@ static constexpr int event_text_for_talk_transmog_head = 69000010;
 static constexpr int event_text_for_talk_transmog_chest = 69000011;
 static constexpr int event_text_for_talk_transmog_arms = 69000012;
 static constexpr int event_text_for_talk_transmog_legs = 69000013;
+static constexpr int event_text_for_talk_transmog_set = 69000014;
 static constexpr int event_text_for_talk_undo_transmog = 69000020;
 static constexpr int event_text_for_talk_cancel = 15000372;
 static constexpr int event_text_for_talk_sort_chest = 15000395;
@@ -38,6 +42,7 @@ static constexpr int menu_text_transmog_head = 690000;
 static constexpr int menu_text_transmog_chest = 690001;
 static constexpr int menu_text_transmog_arms = 690002;
 static constexpr int menu_text_transmog_legs = 690003;
+static constexpr int menu_text_transmog_set = 690004;
 static constexpr int line_help_select_item_for_purchase = 231000;
 static constexpr int dialogues_purchase_item_for_runes = 231000;
 

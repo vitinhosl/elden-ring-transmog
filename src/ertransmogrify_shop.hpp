@@ -21,7 +21,9 @@ static constexpr long long transmog_head_shop_menu_id = 4000000;
 static constexpr long long transmog_chest_shop_menu_id = 4100000;
 static constexpr long long transmog_arms_shop_menu_id = 4200000;
 static constexpr long long transmog_legs_shop_menu_id = 4300000;
+static constexpr long long transmog_set_shop_menu_id = 4400000;
 static constexpr long long transmog_shop_max_size = 100000;
+static constexpr signed char transmog_shop_ui_category_set = 4;
 
 /**
  * DLC transformations. These protectors have no item names or icons, so they need an explicit

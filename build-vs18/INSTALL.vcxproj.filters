@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\Jogos\SOULS LIKE\Sources\Elden Ring\Transmogrify\build-vs18\CMakeFiles\ba9746b33d93eb64f1b8a0ac4ee9830f\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{4049C3FD-3E7F-3FB9-B398-E32F2C0B60CD}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
