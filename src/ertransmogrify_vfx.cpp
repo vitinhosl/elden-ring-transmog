@@ -464,7 +464,12 @@ class update_transmog_vfx_task : public er::CS::CSEzTask {
      * Returns true if the local player's transmog shouldn't be displayed on other player's screens
      * and vice versa
      */
-    bool is_client_side_only() {
+    struct client_side_only_result_st {
+        bool client_side_only;
+        bool peek_real_armor;
+    };
+
+    client_side_only_result_st get_client_side_only_state() {
         using clock = chrono::steady_clock;
 
         // This stateinfo forces client side only regardless of other options (for ERR)
@@ -473,12 +478,12 @@ class update_transmog_vfx_task : public er::CS::CSEzTask {
             for (auto speffect_entry = main_player->special_effects->head; speffect_entry;
                  speffect_entry = speffect_entry->next) {
                 if (speffect_entry->param->stateInfo == client_side_only_state_info) {
-                    return true;
+                    return {true, false};
                 }
             }
         }
 
-        auto result = ertransmogrify::config::client_side_only;
+        auto base_client_side_only = ertransmogrify::config::client_side_only;
 
         static auto invert = false;
         static auto last_invert_change_time = clock::now();
@@ -499,7 +504,9 @@ class update_transmog_vfx_task : public er::CS::CSEzTask {
             }
         }
 
-        return result != invert;
+        auto client_side_only = base_client_side_only != invert;
+        auto peek_real_armor = !base_client_side_only && invert;
+        return {client_side_only, peek_real_armor};
     }
 
 public:
@@ -521,9 +528,14 @@ public:
         auto &local_player_context = player_contexts[0];
         local_player_context.player = world_chr_man->main_player;
 
+        auto client_side_only_state = get_client_side_only_state();
+
         // Update the local player VFX based on their transmog selections
         auto state =
             ertransmogrify::local_player::get_local_player_state(world_chr_man->main_player);
+        if (client_side_only_state.peek_real_armor) {
+            state = empty_state;
+        }
         auto any_changed = update_player_context(local_player_context, state, 0);
 
         // Apply or remove the transmog SpEffects on the main player based on their selections
@@ -548,7 +560,7 @@ public:
         }
 
         static bool prev_client_side_only = false;
-        bool client_side_only = is_client_side_only();
+        bool client_side_only = client_side_only_state.client_side_only;
         if (client_side_only != prev_client_side_only) {
             any_changed = true;
             prev_client_side_only = client_side_only;
